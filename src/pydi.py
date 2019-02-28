@@ -1,50 +1,38 @@
 import glob
+import importlib
 import inspect
+import logging
 import os
 import re
 import sys
-from os.path import dirname, basename, isfile
-import logging
-import importlib
+from os.path import isfile
 
-# from src.test.dude import Dude
-sys.path.append('/home/user/Documents/dev/pydi')
 
 class Pydi:
     def __init__(self, directory=None):
         self._logger = logging.getLogger(__name__)
         self._directory = directory or os.path.join(os.path.dirname(os.path.abspath(__file__)))
-        self._src = '/home/user/Documents/dev/pydi/src'
+        self._class_type_map = self._detect_classes()
 
-    def detect_classes(self):
+    def _detect_classes(self):
         self._logger.info('Detecting project\'s classes')
 
         current_dir = self._directory
-
         modules = glob.glob(current_dir + "/**/*.py", recursive=True)
-
         reg = re.compile('src.*(?=\.)')
 
-        __all__ = [reg.findall(f)[0].replace('/', '.') for f in modules if isfile(f) and not f.endswith('__init__.py')]
-        x = 1
+        class_type_names = [reg.findall(f)[0].replace('/', '.') for f in modules if isfile(f) and not f.endswith('__init__.py')]
+        # print(f'All: {class_type_names}')
 
-        print(f'All: {__all__}')
+        class_types = set((inspect.getmembers(sys.modules[importlib.import_module(name).__name__], inspect.isclass)[0][1]) for name in class_type_names[1:])
+        # print(class_types)
 
-        class_types = set()
+        return {type.__name__.lower(): type for type in class_types}
 
-        for name in __all__[1:]:
-            x = importlib.import_module(name)
-            class_types.add(inspect.getmembers(sys.modules[x.__name__], inspect.isclass)[0][1])
-
-        print(class_types)
-
-        objs = [type() for type in class_types]
-
-        print(objs)
-
+    def build_dependency(self, dependency_name):
+        return self._class_type_map[dependency_name]()
 
 pydi = Pydi()
-pydi.detect_classes()
 
-
-# dude = Dude()
+something = pydi.build_dependency('something')
+something.do()

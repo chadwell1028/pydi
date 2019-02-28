@@ -4,4 +4,5 @@ class Dude:
 
     def something(self):
         print(self._x)
+        return "something in Dude"
 
