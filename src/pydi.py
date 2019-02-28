@@ -9,10 +9,11 @@ from os.path import isfile
 
 
 class Pydi:
-    def __init__(self, directory=None):
+    def __init__(self, something, directory=None):
         self._logger = logging.getLogger(__name__)
         self._directory = directory or os.path.join(os.path.dirname(os.path.abspath(__file__)))
         self._class_type_map = self._detect_classes()
+        self._something = self.build_dependency(something)
 
     def _detect_classes(self):
         self._logger.info('Detecting project\'s classes')
@@ -32,7 +33,9 @@ class Pydi:
     def build_dependency(self, dependency_name):
         return self._class_type_map[dependency_name]()
 
-pydi = Pydi()
+    def thing(self):
+        self._something.do()
 
-something = pydi.build_dependency('something')
-something.do()
+
+pydi = Pydi('something')
+pydi.thing()
